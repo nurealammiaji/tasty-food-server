@@ -43,6 +43,7 @@ async function run() {
 
     const menuCollection = client.db("tastyFood").collection("menus");
     const reviewCollection = client.db("tastyFood").collection("reviews");
+    const cartCollection = client.db("tastyFood").collection("carts");
 
     app.get("/menus", async (req, res) => {
       const cursor = menuCollection.find();
@@ -56,6 +57,13 @@ async function run() {
       res.send(result);
     })
 
+    app.post("/carts", async (req, res) => {
+      const cart = req.body;
+      console.log(cart);
+      const result = await cartCollection.insertOne(cart);
+      res.send(result);
+    })
+    
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
