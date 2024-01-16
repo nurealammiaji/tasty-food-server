@@ -62,12 +62,21 @@ async function run() {
       console.log(cart);
       const result = await cartCollection.insertOne(cart);
       res.send(result);
+      console.log('post', result);
     })
 
     app.get("/carts", async (req, res) => {
-      const cursor = cartCollection.find();
+      const email = req.query.email;
+      console.log(email);
+      let query;
+      if (email) {
+        query = {email: email};
+      }
+      console.log(query);
+      const cursor = cartCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
+      console.log('get', result);
     })
 
     // Send a ping to confirm a successful connection
