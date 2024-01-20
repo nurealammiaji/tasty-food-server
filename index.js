@@ -1,6 +1,6 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const express = require('express');
 const app = express();
@@ -51,6 +51,13 @@ async function run() {
       res.send(result);
     })
 
+    app.get("/menus/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await menuCollection.findOne(query);
+      res.send(result);
+    })
+
     app.get("/reviews", async (req, res) => {
       const cursor = reviewCollection.find();
       const result = await cursor.toArray();
@@ -59,24 +66,19 @@ async function run() {
 
     app.post("/carts", async (req, res) => {
       const cart = req.body;
-      console.log(cart);
       const result = await cartCollection.insertOne(cart);
       res.send(result);
-      console.log('post', result);
     })
 
     app.get("/carts", async (req, res) => {
       const email = req.query.email;
-      console.log(email);
       let query;
       if (email) {
-        query = {email: email};
+        query = { email: email };
       }
-      console.log(query);
       const cursor = cartCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
-      console.log('get', result);
     })
 
     // Send a ping to confirm a successful connection
