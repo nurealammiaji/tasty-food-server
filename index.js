@@ -44,6 +44,7 @@ async function run() {
     const menuCollection = client.db("tastyFood").collection("menus");
     const reviewCollection = client.db("tastyFood").collection("reviews");
     const cartCollection = client.db("tastyFood").collection("carts");
+    const userCollection = client.db("tastyFood").collection("users");
 
     app.get("/menus", async (req, res) => {
       const cursor = menuCollection.find();
@@ -99,6 +100,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
+      res.send(result);
+    })
+
+    app.post("/users", async(req, res) => {
+      const user = req.body;
+      console.log(user);
+      const result = await userCollection.insertOne(user);
       res.send(result);
     })
 
