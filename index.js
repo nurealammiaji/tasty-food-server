@@ -46,6 +46,7 @@ async function run() {
     const cartCollection = client.db("tastyFood").collection("carts");
     const userCollection = client.db("tastyFood").collection("users");
 
+    // Menu API
     app.get("/menus", async (req, res) => {
       const cursor = menuCollection.find();
       const result = await cursor.toArray();
@@ -66,12 +67,14 @@ async function run() {
       res.send(result);
     })
 
+    // Review API
     app.get("/reviews", async (req, res) => {
       const cursor = reviewCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     })
 
+    // Cart API
     app.post("/carts", async (req, res) => {
       const cart = req.body;
       const result = await cartCollection.insertOne(cart);
@@ -103,6 +106,7 @@ async function run() {
       res.send(result);
     })
 
+    // User API
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -117,6 +121,13 @@ async function run() {
     app.get("/users", async (req, res) => {
       const cursor = userCollection.find();
       const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.delete("/users/:id", async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await userCollection.deleteOne(query);
       res.send(result);
     })
 
