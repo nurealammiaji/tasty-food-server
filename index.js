@@ -14,6 +14,24 @@ const secret = process.env.ACCESS_TOKEN_SECRET;
 app.use(cors());
 app.use(express.json());
 
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  let token;
+  if (!authorization) {
+    res.status(401).send({ error: true, message: "Unauthorized Access !!" });
+  }
+  if (authorization) {
+    token = authorization.split(" ")[1];
+  }
+  jwt.verify(token, secret, (error, decoded) => {
+    if (error) {
+      return res.status(401).send({ error: 1, message: "Unauthorized Access !!" });
+    }
+    req.decoded = decoded;
+    next();
+  })
+}
+
 // Server URL
 app.get("/", (req, res) => {
   res.send("Tasty Food Server");
@@ -45,6 +63,15 @@ async function run() {
     const reviewCollection = client.db("tastyFood").collection("reviews");
     const cartCollection = client.db("tastyFood").collection("carts");
     const userCollection = client.db("tastyFood").collection("users");
+
+    // JWT API
+    app.get("/jwt/:email", (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const token = jwt.sign({ email }, secret, { expiresIn: '1h' });
+      res.send({ token });
+      console.log({ token });
+    })
 
     // Menu APIs
     app.get("/menus", async (req, res) => {
@@ -81,7 +108,7 @@ async function run() {
       res.send(result);
     })
 
-    app.get("/carts", async (req, res) => {
+    app.get("/carts", verifyJWT, async (req, res) => {
       const email = req.query.email;
       let query;
       if (email) {
@@ -121,7 +148,7 @@ async function run() {
     app.patch("/users/:id", async (req, res) => {
       const id = req.params.id;
       const userRole = req.body;
-      const filter = { _id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const updateDoc = { $set: { role: userRole.role } };
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
