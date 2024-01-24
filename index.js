@@ -67,10 +67,8 @@ async function run() {
     // JWT API
     app.get("/jwt/:email", (req, res) => {
       const email = req.params.email;
-      console.log(email);
       const token = jwt.sign({ email }, secret, { expiresIn: '1h' });
       res.send({ token });
-      console.log({ token });
     })
 
     // Menu APIs
@@ -131,6 +129,19 @@ async function run() {
       const query = { _id: new ObjectId(id) };
       const result = await cartCollection.deleteOne(query);
       res.send(result);
+    })
+
+    // Admin API
+    app.get("/users/admins", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const filter = { role: "admin" };
+      const result = await userCollection.findOne(query, filter);
+      if (!result) {
+        return res.send({ message: "User is not an admin" })
+      }
+      res.send(result);
+      console.log(result);
     })
 
     // User APIs
