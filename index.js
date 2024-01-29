@@ -71,6 +71,17 @@ async function run() {
       res.send({ token });
     })
 
+    // Admin Verification
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user?.role !== "admin") {
+        return res.status(403).send({ error: 1, message: "Forbidden Access !!" })
+      }
+      next();
+    }
+
     // Menu APIs
     app.get("/menus", async (req, res) => {
       const cursor = menuCollection.find();
@@ -131,17 +142,13 @@ async function run() {
       res.send(result);
     })
 
-    // Admin API
-    app.get("/users/admins", async (req, res) => {
-      const email = req.query.email;
+    // Admin Api
+    app.get("/users/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
       const query = { email: email };
-      const filter = { role: "admin" };
-      const result = await userCollection.findOne(query, filter);
-      if (!result) {
-        return res.send({ message: "User is not an admin" })
-      }
+      const user = await userCollection.findOne(query);
+      const result = user?.role === "admin";
       res.send(result);
-      console.log(result);
     })
 
     // User APIs
@@ -156,7 +163,7 @@ async function run() {
       res.send(result);
     })
 
-    app.patch("/users/:id", async (req, res) => {
+    app.patch("/users/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
       const userRole = req.body;
       const filter = { _id: new ObjectId(id) };
